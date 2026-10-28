@@ -16,4 +16,13 @@ cfg.rssSigma      = 5;       % [dB] 조정
 cfg.detThr        = -95;     % [dBm] 감지 한계, 기기 의존
 cfg.logLikFloor   = -8;      % 비콘 하나의 로그 우도 하한 (정규화 거리 4)
 cfg.pktLoss       = 0.05;    % 에포크당 패킷 손실 확률 (시뮬레이터용)
+
+% ---- PDR 전이 (T3) ----
+cfg.pdrSigma      = 0.8;     % [m] 전이 퍼짐, 조정
+
+% ---- 융합·지표 (T4) ----
+cfg.probFloor     = 1e-6;            % 칸당 확률 하한, 모든 방법에 동일하게 적용
+cfg.wGrid         = 0:0.05:1;        % 고정 w 후보 21개
+cfg.skipFirst     = true;            % 첫 에포크(모든 전략이 같음)는 지표에서 제외
+cfg.toySpeed      = 1.2;             % [m/에포크] 장난감 경로용
 end
