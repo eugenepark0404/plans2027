@@ -61,7 +61,37 @@ check('S4 경로 번호가 서로 다름', numel(unique(cellfun(@(x) x.pathId, s
 runS = runFilter(set5{1}, 0.3, map, rm, cfg);
 check('S5 시뮬레이션 경로에서 필터가 정상 동작', all(isfinite(runS.logPost(:))));
 
-disp('--- 단위 테스트 끝 (6: oracle, 8: 분할 겹침 검사는 해당 모듈을 만들 때 추가) ---');
+% ---- T6 oracle, 분할 테스트 ----
+% 테스트 6: 에포크 2(모든 전략이 같은 prior)에서 oracle은 모든 고정 w보다 나쁘지 않다.
+%   경로 전체에서는 prior가 달라 항상 성립하지는 않으며, 체계적으로 위반되면 구현 오류다.
+wG = cfg.wGrid(:);  ok6a = true;  ok6b = true;  oraMean = 0;  fixMean = zeros(numel(wG), 1);
+for ip = 1:numel(set5)
+    trp = set5{ip};  c2 = trp.cell(2);
+    orL = oracleRun(trp, 'logloss', map, rm, cfg);
+    orH = oracleRun(trp, 'hit', map, rm, cfg);
+    nllFix = zeros(numel(wG), 1);  hitFix = false(numel(wG), 1);
+    for i = 1:numel(wG)
+        rf = runFilter(trp, wG(i), map, rm, cfg);
+        nllFix(i) = -rf.logPost(c2, 2);
+        [~, top] = max(rf.logPost(:, 2));  hitFix(i) = (top == c2);
+        fixMean(i) = fixMean(i) + metricsPerPath(rf, trp, cfg).logloss / numel(set5);
+    end
+    ok6a = ok6a && (-orL.logPost(c2, 2) <= min(nllFix) + 1e-12);
+    [~, topH] = max(orH.logPost(:, 2));
+    ok6b = ok6b && (~any(hitFix) || topH == c2);
+    oraMean = oraMean + metricsPerPath(orL, trp, cfg).logloss / numel(set5);
+end
+check('6 에포크 2에서 log-loss oracle 손실 <= 모든 고정 w', ok6a);
+check('6 에포크 2에서 hit oracle은 맞힐 수 있으면 맞힘', ok6b);
+check('6 경로 전체 평균에서도 oracle 손실 <= 최적 고정 (체계적 위반 점검)', oraMean <= min(fixMean) + 1e-12);
+
+% 테스트 8: 훈련/검증/테스트 경로 번호가 겹치지 않는다
+set20 = simulateSet(map, bc, cfg, 20, 8);
+sp = splitPaths(set20, [0.6 0.2 0.2], 1);
+check('8 분할 겹침 없음, 개수 12/4/4', isempty(intersect(sp.train, sp.val)) && isempty(intersect(sp.train, sp.test)) ...
+    && isempty(intersect(sp.val, sp.test)) && numel(sp.train) == 12 && numel(sp.val) == 4 && numel(sp.test) == 4);
+
+disp('--- 단위 테스트 끝 ("학습 코드가 oracleRun 출력을 참조하지 않는다" 검사는 T10에서 추가) ---');
 
 function check(name, cond)
 if cond, fprintf('  통과  %s\n', name);
