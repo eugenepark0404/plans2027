@@ -10,5 +10,7 @@ for iw = 1:nW
         m = metricsPerPath(run, trajs{ip}, cfg);
         sw.hit(iw, ip) = m.hit;  sw.logloss(iw, ip) = m.logloss;  sw.top3(iw, ip) = m.top3;
     end
+    if isfield(cfg, 'verbose') && cfg.verbose, fprintf('.'); end   % 진행 표시(w 하나 끝날 때마다)
 end
+if isfield(cfg, 'verbose') && cfg.verbose, fprintf('\n'); end
 end

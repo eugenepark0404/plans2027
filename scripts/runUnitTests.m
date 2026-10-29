@@ -48,6 +48,19 @@ trX = tr;  trX.rss = -110 * ones(size(tr.rss));
 runX = runFilter(trX, 0.5, map, rm, cfg);
 check('9 극단 RSS', all(isfinite(runX.logPost(:))));
 
+% ---- T5a 시뮬레이터 테스트 ----
+simA = simulateTraj(map, bc, cfg, 5);  simB = simulateTraj(map, bc, cfg, 5);
+check('S1 같은 시드 -> 같은 경로', isequaln(simA.rss, simB.rss) && isequal(simA.pos, simB.pos) && isequal(simA.pdr, simB.pdr));
+set5 = simulateSet(map, bc, cfg, 5, 3);
+nEp5 = cellfun(@(x) size(x.rss, 1), set5);
+check('S2 에포크 수 180~240', all(nEp5 >= 180 & nEp5 <= 240));
+check('S3 정답 셀이 1..N, 참 위치가 통로 위', all(cellfun(@(x) all(x.cell >= 1 & x.cell <= map.N), set5)) && ...
+    all(cellfun(@(x) all(map.cellId(sub2ind(size(map.cellId), min(max(floor(x.pos(:,2)/cfg.cellSize)+1,1),map.nRows), ...
+    min(max(floor(x.pos(:,1)/cfg.cellSize)+1,1),map.nCols))) > 0), set5)));
+check('S4 경로 번호가 서로 다름', numel(unique(cellfun(@(x) x.pathId, set5))) == 5);
+runS = runFilter(set5{1}, 0.3, map, rm, cfg);
+check('S5 시뮬레이션 경로에서 필터가 정상 동작', all(isfinite(runS.logPost(:))));
+
 disp('--- 단위 테스트 끝 (6: oracle, 8: 분할 겹침 검사는 해당 모듈을 만들 때 추가) ---');
 
 function check(name, cond)

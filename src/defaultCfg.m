@@ -25,4 +25,19 @@ cfg.probFloor     = 1e-6;            % 칸당 확률 하한, 모든 방법에 �
 cfg.wGrid         = 0:0.05:1;        % 고정 w 후보 21개
 cfg.skipFirst     = true;            % 첫 에포크(모든 전략이 같음)는 지표에서 제외
 cfg.toySpeed      = 1.2;             % [m/에포크] 장난감 경로용
+
+% ---- 시뮬레이터 (T5a). 3x3 조건 격자(5.5)에서 바꾸는 값은 rssScale, driftDeg ----
+cfg.sim.speed       = 1.2;        % [m/s] 경로마다 +-speedVar
+cfg.sim.speedVar    = 0.1;
+cfg.sim.stepLen     = 0.7;        % [m] 걸음 폭 (걸음 수 특징에 사용, T9)
+cfg.sim.nWaypoints  = [3 5];      % 경유점 수 범위
+cfg.sim.minWpDist   = 6;          % [m] 시작점과 경유점 사이 최소 거리
+cfg.sim.epochRange  = [180 240];  % 경로당 에포크 수
+cfg.sim.smoothWin   = 15;         % 이동 평균 창 (0.1 m 간격 샘플 기준, 1.5 m)
+cfg.sim.hallWobble  = 0.3;        % [m] 홀의 좌우 흔들림 표준편차
+cfg.sim.rssScale    = 1.0;        % RSS 잡음 배율 (0.6 / 1.0 / 1.5)
+cfg.sim.pdrScaleSd  = 0.05;       % 경로마다 걸음 폭 배율의 표준편차
+cfg.sim.pdrNoise    = 0.05;       % 에포크마다 곱셈 잡음
+cfg.sim.h0Deg       = 3;          % [도] 시작 방향 오차 표준편차
+cfg.sim.driftDeg    = 0.6;        % [도/에포크] 방향 드리프트 (낮음 0.3 / 중간 0.6 / 높음 1.2)
 end
